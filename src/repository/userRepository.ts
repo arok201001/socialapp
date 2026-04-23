@@ -22,3 +22,31 @@ export async function getByUsername(username: string) {
 
   return user || null;
 }
+export async function followUser(request: FastifyRequest<{ params: { username: string } }>, reply: FastifyReply) {
+  const followerUsername = request.tokenPayload.username;
+  const followeeUsername = request.params.username;
+
+  if (followerUsername === followeeUsername) {
+    return reply.status(400).send({ error: "You cannot follow yourself."});
+
+  }
+
+  await userRepository.follow(followerUsername, followeeUsername);
+
+  return { message: `You are now following ${followeeUsername}.` };
+ }
+
+ export async function unfollowUser(request: FastifyRequest<{ params: { username: string } }>, reply: FastifyReply) {
+  const followerUsername = request.tokenPayload.username;
+  const followeeUsername = request.params.username;
+
+  await userRepository.unfollow(followerUsername, followeeUsername);
+
+  return { message: `You have unfollowed ${followeeUsername}.` };
+ }
+
+ export async function getFeed(request: FastifyRequest, reply: FastifyReply) {
+  const username = request.tokenPayload.username;
+  const feed = await userRepository.getFeed(username);
+  return { feed };
+ }
